@@ -325,3 +325,8 @@ void til::postfix_writer::do_identity_node(til::identity_node* const node, int l
     ASSERT_SAFE_EXPRESSIONS;
     node->argument()->accept(this, lvl);
 }
+
+void til::postfix_writer::do_sizeof_node(til::sizeof_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+    _pf.INT(node->argument()->type()->size());
+}
