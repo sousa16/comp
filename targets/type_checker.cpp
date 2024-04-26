@@ -118,6 +118,35 @@ void til::type_checker::do_eq_node(cdk::eq_node *const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
+void til::type_checker::do_address_of_node(til::address_of_node *const node, int lvl) {
+    ASSERT_UNSPEC;
+
+    node->lvalue()->accept(this, lvl + 2);
+    if (node->lvalue()->is_typed(cdk::TYPE_POINTER)) {
+        auto ref = cdk::reference_type::cast(node->lvalue()->type());
+        if (ref->referenced()->name() == cdk::TYPE_VOID) {
+            // [[void]] is the same as [void]
+            node->type(node->lvalue()->type());
+            return;
+        }
+    }
+    node->type(cdk::reference_type::create(4, node->lvalue()->type()));
+}
+
+void til::type_checker::do_alloc_node(til::alloc_node *const node, int lvl) {
+    ASSERT_UNSPEC;
+
+    node->argument()->accept(this, lvl + 2);
+
+    if (!node->argument()->is_typed(cdk::TYPE_INT)) {
+        throw std::string("wrong type in argument of unary expression");
+    }
+
+    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_UNSPEC)));
+}
+
+//---------------------------------------------------------------------------
+
 void til::type_checker::do_variable_node(cdk::variable_node *const node, int lvl) {
     ASSERT_UNSPEC;
     const std::string &id = node->name();
@@ -234,16 +263,4 @@ void til::type_checker::do_identity_node(til::identity_node *const node, int lvl
     }
 
     node->type(node->argument()->type());
-}
-
-void til::type_checker::do_alloc_node(til::alloc_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->argument()->accept(this, lvl + 2);
-
-    if (!node->argument()->is_typed(cdk::TYPE_INT)) {
-        throw std::string("wrong type in argument of unary expression");
-    }
-
-    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_UNSPEC)));
 }

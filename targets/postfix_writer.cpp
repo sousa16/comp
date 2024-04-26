@@ -139,6 +139,11 @@ void til::postfix_writer::do_eq_node(cdk::eq_node* const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
+void til::postfix_writer::do_address_of_node(til::address_of_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+    node->lvalue()->accept(this, lvl + 2);
+}
+
 void til::postfix_writer::do_alloc_node(til::alloc_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
 
