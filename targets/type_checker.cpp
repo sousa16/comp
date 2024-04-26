@@ -130,6 +130,19 @@ void til::type_checker::do_variable_node(cdk::variable_node *const node, int lvl
     }
 }
 
+void til::type_checker::do_pointer_index_node(til::pointer_index_node *const node, int lvl) {
+    ASSERT_UNSPEC;
+
+    node->base()->accept(this, lvl + 2);
+    if (!node->base()->is_typed(cdk::TYPE_POINTER)) throw std::string("wrong type in base argument of pointer index expression");
+
+    node->index()->accept(this, lvl + 2);
+    if (!node->index()->is_typed(cdk::TYPE_INT)) throw std::string("wrong type in index argument of pointer index expression");
+
+    // in Simple, expressions are always int
+    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_INT)));
+}
+
 void til::type_checker::do_rvalue_node(cdk::rvalue_node *const node, int lvl) {
     ASSERT_UNSPEC;
     try {

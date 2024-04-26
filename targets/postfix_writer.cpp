@@ -145,6 +145,15 @@ void til::postfix_writer::do_variable_node(cdk::variable_node* const node, int l
     _pf.ADDR(node->name());
 }
 
+void til::postfix_writer::do_pointer_index_node(til::pointer_index_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+    node->base()->accept(this, lvl);
+    node->index()->accept(this, lvl);
+    _pf.INT(node->type()->size());
+    _pf.MUL();
+    _pf.ADD();
+}
+
 void til::postfix_writer::do_rvalue_node(cdk::rvalue_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
     node->lvalue()->accept(this, lvl);
