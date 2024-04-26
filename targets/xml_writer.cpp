@@ -222,3 +222,11 @@ void til::xml_writer::do_nullptr_node(til::nullptr_node* const node, int lvl) {
 
     emptyTag(node, lvl);
 }
+
+//---------------------------------------------------------------------------
+void til::xml_writer::do_identity_node(til::identity_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+    openTag(node, lvl);
+    node->argument()->accept(this, lvl + 2);
+    closeTag(node, lvl);
+}

@@ -221,3 +221,17 @@ void til::type_checker::do_nullptr_node(til::nullptr_node *const node, int lvl) 
 
     node->type(cdk::reference_type::create(4, cdk::primitive_type::create(0, cdk::TYPE_UNSPEC)));
 }
+
+//---------------------------------------------------------------------------
+
+void til::type_checker::do_identity_node(til::identity_node *const node, int lvl) {
+    ASSERT_UNSPEC;
+
+    node->argument()->accept(this, lvl + 2);
+
+    if (!node->argument()->is_typed(cdk::TYPE_INT) && !node->argument()->is_typed(cdk::TYPE_DOUBLE)) {
+        throw std::string("wrong type in argument of unary expression");
+    }
+
+    node->type(node->argument()->type());
+}

@@ -292,3 +292,10 @@ void til::postfix_writer::do_if_else_node(til::if_else_node* const node, int lvl
 void til::postfix_writer::do_nullptr_node(til::nullptr_node* const node, int lvl) {
     _pf.INT(0);
 }
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_identity_node(til::identity_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+    node->argument()->accept(this, lvl);
+}
