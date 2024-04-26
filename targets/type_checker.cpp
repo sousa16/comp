@@ -235,3 +235,15 @@ void til::type_checker::do_identity_node(til::identity_node *const node, int lvl
 
     node->type(node->argument()->type());
 }
+
+void til::type_checker::do_alloc_node(til::alloc_node *const node, int lvl) {
+    ASSERT_UNSPEC;
+
+    node->argument()->accept(this, lvl + 2);
+
+    if (!node->argument()->is_typed(cdk::TYPE_INT)) {
+        throw std::string("wrong type in argument of unary expression");
+    }
+
+    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_UNSPEC)));
+}

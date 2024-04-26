@@ -139,6 +139,27 @@ void til::postfix_writer::do_eq_node(cdk::eq_node* const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
+void til::postfix_writer::do_alloc_node(til::alloc_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+
+    // Get the type of the node's argument
+    auto argType = node->argument()->type();
+
+    // If the argument type is a reference type, get the size of the referenced type
+    size_t size = 1;
+    if (argType->name() == cdk::TYPE_POINTER) {
+        auto refType = cdk::reference_type::cast(argType);
+        size = refType->referenced()->size();
+    }
+
+    node->argument()->accept(this, lvl);
+    _pf.INT(std::max(static_cast<size_t>(1), size));
+    _pf.MUL();
+    _pf.ALLOC();
+    _pf.SP();
+}
+//---------------------------------------------------------------------------
+
 void til::postfix_writer::do_variable_node(cdk::variable_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
     // simplified generation: all variables are global
