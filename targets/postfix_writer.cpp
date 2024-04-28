@@ -4,6 +4,8 @@
 #include "targets/postfix_writer.h"
 #include ".auto/all_nodes.h"  // all_nodes.h is automatically generated
 
+
+
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_nil_node(cdk::nil_node * const node, int lvl) {
@@ -274,4 +276,36 @@ void til::postfix_writer::do_if_else_node(til::if_else_node * const node, int lv
   _pf.LABEL(mklbl(lbl1));
   node->elseblock()->accept(this, lvl + 2);
   _pf.LABEL(mklbl(lbl1 = lbl2));
+}
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_block_node(til::block_node * const node, int lvl) {
+	//TODO
+}
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_next_node(til::next_node * const node, int lvl) {
+	//TODO
+}
+
+void til::postfix_writer::do_stop_node(til::stop_node * const node, int lvl) {
+	//TODO
+}
+
+void til::postfix_writer::do_return_node(til::return_node * const node, int lvl) {
+	//TODO
+}
+
+void til::postfix_writer::do_declaration_node(til::declaration_node * const node, int lvl) {
+	//TODO
+}
+
+void til::postfix_writer::do_function_node(til::function_node * const node, int lvl) {
+	//TODO
+}
+
+void til::postfix_writer::do_function_call_node(til::function_call_node * const node, int lvl) {
+	//TODO
 }
