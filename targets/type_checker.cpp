@@ -119,30 +119,11 @@ void til::type_checker::do_eq_node(cdk::eq_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_address_of_node(til::address_of_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->lvalue()->accept(this, lvl + 2);
-    if (node->lvalue()->is_typed(cdk::TYPE_POINTER)) {
-        auto ref = cdk::reference_type::cast(node->lvalue()->type());
-        if (ref->referenced()->name() == cdk::TYPE_VOID) {
-            // [[void]] is the same as [void]
-            node->type(node->lvalue()->type());
-            return;
-        }
-    }
-    node->type(cdk::reference_type::create(4, node->lvalue()->type()));
+    // EMPTY
 }
 
 void til::type_checker::do_alloc_node(til::alloc_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->argument()->accept(this, lvl + 2);
-
-    if (!node->argument()->is_typed(cdk::TYPE_INT)) {
-        throw std::string("wrong type in argument of unary expression");
-    }
-
-    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_UNSPEC)));
+    // EMPTY
 }
 
 //---------------------------------------------------------------------------
@@ -160,16 +141,7 @@ void til::type_checker::do_variable_node(cdk::variable_node *const node, int lvl
 }
 
 void til::type_checker::do_pointer_index_node(til::pointer_index_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->base()->accept(this, lvl + 2);
-    if (!node->base()->is_typed(cdk::TYPE_POINTER)) throw std::string("wrong type in base argument of pointer index expression");
-
-    node->index()->accept(this, lvl + 2);
-    if (!node->index()->is_typed(cdk::TYPE_INT)) throw std::string("wrong type in index argument of pointer index expression");
-
-    // in Simple, expressions are always int
-    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(4, cdk::TYPE_INT)));
+    // EMPTY
 }
 
 void til::type_checker::do_rvalue_node(cdk::rvalue_node *const node, int lvl) {
@@ -246,33 +218,15 @@ void til::type_checker::do_if_else_node(til::if_else_node *const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_nullptr_node(til::nullptr_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->type(cdk::reference_type::create(4, cdk::primitive_type::create(0, cdk::TYPE_UNSPEC)));
+    // EMPTY
 }
 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_identity_node(til::identity_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->argument()->accept(this, lvl + 2);
-
-    if (!node->argument()->is_typed(cdk::TYPE_INT) && !node->argument()->is_typed(cdk::TYPE_DOUBLE)) {
-        throw std::string("wrong type in argument of unary expression");
-    }
-
-    node->type(node->argument()->type());
+    // EMPTY
 }
 
 void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
-    ASSERT_UNSPEC;
-
-    node->argument()->accept(this, lvl + 2);
-
-    if (!node->argument()->is_typed(cdk::TYPE_INT) && !node->argument()->is_typed(cdk::TYPE_DOUBLE) && !node->argument()->is_typed(cdk::TYPE_POINTER)) {
-        throw std::string("wrong type in argument of unary expression");
-    }
-
-    node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    // EMPTY
 }
