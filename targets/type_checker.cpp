@@ -192,11 +192,7 @@ void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_read_node(til::read_node *const node, int lvl) {
-    try {
-        node->argument()->accept(this, lvl);
-    } catch (const std::string &id) {
-        throw "undeclared variable '" + id + "'";
-    }
+    node->type(cdk::primitive_type::create(0, cdk::TYPE_UNSPEC));
 }
 
 //---------------------------------------------------------------------------
@@ -230,31 +226,31 @@ void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_block_node(til::block_node *const node, int lvl) {
-  // EMPTY
+    // EMPTY
 }
 
 void til::type_checker::do_next_node(til::next_node *const node, int lvl) {
-  // EMPTY
+    // EMPTY
 }
 
 void til::type_checker::do_stop_node(til::stop_node *const node, int lvl) {
-  // EMPTY
+    // EMPTY
 }
 
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_return_node(til::return_node *const node, int lvl) {
-  // TODO
+    // TODO
 }
 
 void til::type_checker::do_declaration_node(til::declaration_node *const node, int lvl) {
-  // TODO
+    // TODO
 }
 
 void til::type_checker::do_function_node(til::function_node *const node, int lvl) {
-  // TODO
+    // TODO
 }
 
 void til::type_checker::do_function_call_node(til::function_call_node *const node, int lvl) {
-  // TODO
+    // TODO
 }

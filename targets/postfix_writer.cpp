@@ -247,10 +247,14 @@ void til::postfix_writer::do_print_node(til::print_node* const node, int lvl) {
 
 void til::postfix_writer::do_read_node(til::read_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
-    _pf.CALL("readi");
-    _pf.LDFVAL32();
-    node->argument()->accept(this, lvl);
-    _pf.STINT();
+
+    if (node->is_typed(cdk::TYPE_DOUBLE)) {
+        _pf.CALL("readd");
+        _pf.LDFVAL64();
+    } else {
+        _pf.CALL("readi");
+        _pf.LDFVAL32();
+    }
 }
 
 //---------------------------------------------------------------------------
