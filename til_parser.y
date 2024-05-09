@@ -46,7 +46,7 @@
 %nonassoc tUNARY
 
 %type <node> stmt program
-%type <sequence> list
+%type <sequence> list exprs
 %type <expression> expr
 %type <lvalue> lval
 
@@ -63,13 +63,17 @@ list : stmt      { $$ = new cdk::sequence_node(LINE, $1); }
      ;
 
 stmt : expr ';'                         { $$ = new til::evaluation_node(LINE, $1); }
-     | tPRINT expr ';'                  { $$ = new til::print_node(LINE, $2); }
+     | exprs tPRINT                      { $$ = new til::print_node(LINE, $1, false); }
      | tREAD                            { $$ = new til::read_node(LINE); }
      | tWHILE '(' expr ')' stmt         { $$ = new til::while_node(LINE, $3, $5); }
      | tIF '(' expr ')' stmt %prec tIFX { $$ = new til::if_node(LINE, $3, $5); }
      | tIF '(' expr ')' stmt tELSE stmt { $$ = new til::if_else_node(LINE, $3, $5, $7); }
      | '{' list '}'                     { $$ = $2; }
      ;
+
+exprs : exprs ',' expr    { $$ = new cdk::sequence_node(LINE, $3, $1); }
+      |           expr    { $$ = new cdk::sequence_node(LINE, $1); }
+      ;
 
 expr : tINTEGER              { $$ = new cdk::integer_node(LINE, $1); }
      | tSTRING               { $$ = new cdk::string_node(LINE, $1); }

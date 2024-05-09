@@ -186,7 +186,17 @@ void til::type_checker::do_evaluation_node(til::evaluation_node *const node, int
 }
 
 void til::type_checker::do_print_node(til::print_node *const node, int lvl) {
-    node->argument()->accept(this, lvl + 2);
+    for (size_t i = 0; i < node->arguments()->size(); i++) {
+        auto child = dynamic_cast<cdk::expression_node *>(node->arguments()->node(i));
+
+        child->accept(this, lvl);
+
+        if (child->is_typed(cdk::TYPE_UNSPEC)) {
+            child->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+        } else if (!child->is_typed(cdk::TYPE_INT) && !child->is_typed(cdk::TYPE_DOUBLE) && !child->is_typed(cdk::TYPE_STRING)) {
+            throw std::string("invalid argument type " + std::to_string(i + 1) + " of print instruction");
+        }
+    }
 }
 
 //---------------------------------------------------------------------------
