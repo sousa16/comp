@@ -223,10 +223,6 @@ void til::type_checker::do_nullptr_node(til::nullptr_node *const node, int lvl) 
 
 //---------------------------------------------------------------------------
 
-void til::type_checker::do_identity_node(til::identity_node *const node, int lvl) {
-    // EMPTY
-}
-
 void til::type_checker::do_sizeof_node(til::sizeof_node *const node, int lvl) {
     // EMPTY
 }

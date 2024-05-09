@@ -229,10 +229,6 @@ void til::xml_writer::do_nullptr_node(til::nullptr_node* const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
-void til::xml_writer::do_identity_node(til::identity_node* const node, int lvl) {
-    // TODO
-}
-
 void til::xml_writer::do_sizeof_node(til::sizeof_node* const node, int lvl) {
     // TODO
 }
