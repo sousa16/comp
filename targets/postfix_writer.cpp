@@ -140,11 +140,28 @@ void til::postfix_writer::do_eq_node(cdk::eq_node* const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_address_of_node(til::address_of_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+    node->lvalue()->accept(this, lvl + 2);
 }
 
 void til::postfix_writer::do_alloc_node(til::alloc_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+
+    // Get the type of the node's argument
+    auto argType = node->argument()->type();
+
+    // If the argument type is a reference type, get the size of the referenced type
+    size_t size = 1;
+    if (argType->name() == cdk::TYPE_POINTER) {
+        auto refType = cdk::reference_type::cast(argType);
+        size = refType->referenced()->size();
+    }
+
+    node->argument()->accept(this, lvl);
+    _pf.INT(std::max(static_cast<size_t>(1), size));
+    _pf.MUL();
+    _pf.ALLOC();
+    _pf.SP();
 }
 //---------------------------------------------------------------------------
 
@@ -155,7 +172,12 @@ void til::postfix_writer::do_variable_node(cdk::variable_node* const node, int l
 }
 
 void til::postfix_writer::do_pointer_index_node(til::pointer_index_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+    node->base()->accept(this, lvl);
+    node->index()->accept(this, lvl);
+    _pf.INT(node->type()->size());
+    _pf.MUL();
+    _pf.ADD();
 }
 
 void til::postfix_writer::do_rvalue_node(cdk::rvalue_node* const node, int lvl) {
@@ -308,15 +330,15 @@ void til::postfix_writer::do_if_else_node(til::if_else_node* const node, int lvl
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_nullptr_node(til::nullptr_node* const node, int lvl) {
-    // TODO
+    _pf.INT(0);
 }
 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_sizeof_node(til::sizeof_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+    _pf.INT(node->argument()->type()->size());
 }
-
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_block_node(til::block_node* const node, int lvl) {
