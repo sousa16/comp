@@ -97,7 +97,7 @@ EXPR [Ee][+-]?[0-9]+
 "null"                 return tNULL;
 "set"                  return tSET;
 "index"                return tINDEX;
-"objects"              return tOBJETS;
+"objects"              return tOBJECTS;
 "sizeof"			   return tSIZEOF;
 "function"			   return tFUNCTION;
 
