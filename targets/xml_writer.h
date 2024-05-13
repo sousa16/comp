@@ -2,8 +2,9 @@
 #define __SIMPLE_TARGETS_XML_WRITER_H__
 
 #include <cdk/ast/basic_node.h>
-
 #include "targets/basic_ast_visitor.h"
+#include <cdk/types/types.h>
+#include "til_parser.tab.h"
 
 namespace til {
 
@@ -50,6 +51,51 @@ class xml_writer : public basic_ast_visitor {
     void process_literal(cdk::literal_node<T> *const node, int lvl) {
         os() << std::string(lvl, ' ') << "<" << node->label() << ">" << node->value() << "</" << node->label() << ">" << std::endl;
     }
+	inline const char *bool_to_string(bool boolean) {
+      return boolean ? "true" : "false";
+    }
+
+    inline const char *qualifier_name(int qualifier) {
+      switch (qualifier) {
+        case tEXTERNAL: return "external";
+        case tFORWARD: return "forward";
+        case tPUBLIC: return "public";
+        case tVAR: return "var";
+        default: return "unknown ";
+      };
+    }
+
+	inline std::string type_to_string(std::shared_ptr<cdk::basic_type> type){
+	if (type->name() == cdk::TYPE_VOID) {
+		return "void";
+	}
+
+	if (type->name() == cdk::TYPE_INT) {
+		return "int";
+	}
+
+	if (type->name() == cdk::TYPE_DOUBLE) {
+		return "double";
+	}
+
+	if (type->name() == cdk::TYPE_STRING) {
+		return "string";
+	}
+
+	if (type->name() == cdk::TYPE_UNSPEC) {
+		return "unspec";
+	}
+
+	if (type->name() == cdk::TYPE_POINTER) {
+		return "pointer";
+	}
+
+	if (type->name() == cdk::TYPE_FUNCTIONAL) {
+		return "functional";
+	}
+	return "unknown";
+	}
+
 
    public:
     // do not edit these lines
