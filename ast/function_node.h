@@ -36,7 +36,7 @@ namespace til {
 
           this->type(cdk::functional_type::create(arg_types, return_type));
     }
-    
+
     function_node(int lineno, til::block_node *block) :
         cdk::expression_node(lineno), _args(new cdk::sequence_node(lineno)), _block(block), _is_main(true) {
           this->type(cdk::functional_type::create(cdk::primitive_type::create(4, cdk::TYPE_INT)));

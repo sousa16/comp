@@ -271,14 +271,51 @@ void til::xml_writer::do_return_node(til::return_node* const node, int lvl) {
 	}
 }
 
-void til::xml_writer::do_declaration_node(til::declaration_node* const node, int lvl) {
-    // TODO
-}
 
 void til::xml_writer::do_function_node(til::function_node* const node, int lvl) {
-    // TODO
+	ASSERT_SAFE_EXPRESSIONS;
+	os() << std::string(lvl, ' ') << "<" << node->label() <<" type='" << type_to_string(node->type()) << "'>" << std::endl;
+	os() << " is_main='" << bool_to_string(node->is_main()) << '\'';
+
+    openTag(node, lvl);
+	_symtab.push();
+	openTag("arguments", lvl + 2);
+	node->args()->accept(this, lvl + 4);
+	closeTag("arguments", lvl + 2);
+	openTag("block", lvl + 2);
+	node->block()->accept(this, lvl + 4);
+	closeTag("block", lvl + 2);
+	_symtab.pop();
+	closeTag(node, lvl);
+}
+
+void til::xml_writer::do_declaration_node(til::declaration_node* const node, int lvl) {
+	ASSERT_SAFE_EXPRESSIONS;
+	os() << std::string(lvl, ' ') << "<" << node->label() << " Identifier='" << node->identifier() << '\'';
+	os() << " qualifier='" << qualifier_name(node->qualifier()) << '\'';
+	os() << " type='" << type_to_string(node->type()) << "'>" << std::endl;
+
+	if (node->initializer()) {
+		openTag("initializer", lvl + 2);
+		node->initializer()->accept(this, lvl + 4);
+		closeTag("initializer", lvl + 2);
+	}
+
+	closeTag(node, lvl);
 }
 
 void til::xml_writer::do_function_call_node(til::function_call_node* const node, int lvl) {
-    // TODO
+	ASSERT_SAFE_EXPRESSIONS;
+	openTag(node, lvl);
+
+	if (node->func() != nullptr) {
+		openTag("func", lvl + 2);
+		node->func()->accept(this, lvl + 4);
+		closeTag("func", lvl + 2);
+	}
+	openTag("arguments", lvl + 2);
+	node->arguments()->accept(this, lvl + 4);
+	closeTag("arguments", lvl + 2);
+
+	closeTag(node, lvl);
 }
