@@ -139,6 +139,8 @@ decls : decls decl    { $$ = new cdk::sequence_node(LINE, $2, $1); }
 decl : '(' type  tIDENTIFIER      ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, nullptr); delete $3; }
      | '(' type  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, $4); delete $3; }
      | '(' tVAR  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$3, $4); delete $3; }
+     | '('       tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$2, $3); delete $2; }
+
      ;
 
 stmts : stmts stmt    { $$ = new cdk::sequence_node(LINE, $2, $1); }
@@ -193,10 +195,10 @@ expr : tINTEGER                                        { $$ = new cdk::integer_n
      | '(' tSET lval expr ')'                          { $$ = new cdk::assignment_node(LINE, $3, $4); }
      | '(' '?' lval ')'                                { $$ = new til::address_of_node(LINE, $3); }
      | tREAD                                           { $$ = new til::read_node(LINE); }
-     | '(' expr '(' exprs ')' ')'                      { $$ = new til::function_call_node(LINE, $2, $4); }
+     | '(' expr exprs ')'                              { $$ = new til::function_call_node(LINE, $2, $3); }
      | '(' expr ')'                                    { $$ = new til::function_call_node(LINE, $2, new cdk::sequence_node(LINE)); }
-     | '(' '@'  '(' exprs ')' ')'                      { $$ = new til::function_call_node(LINE, nullptr, $4); }
-     | '(' '@'  '(' ')' ')'                            { $$ = new til::function_call_node(LINE, nullptr, new cdk::sequence_node(LINE)); }
+     | '(' '@'  exprs ')'                              { $$ = new til::function_call_node(LINE, nullptr, $3); }
+     | '(' '@' ')'                                     { $$ = new til::function_call_node(LINE, nullptr, new cdk::sequence_node(LINE)); }
      | func_definition                                 { $$ = $1; }
      ;
 
