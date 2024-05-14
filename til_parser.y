@@ -85,7 +85,7 @@ fdecl : '(' tEXTERNAL type tIDENTIFIER      ')'   { $$ = new til::declaration_no
       | '(' tPUBLIC   type tIDENTIFIER      ')'   { $$ = new til::declaration_node(LINE, tPUBLIC, $3, *$4, nullptr); delete $4; }
       | '(' tPUBLIC   type tIDENTIFIER expr ')'   { $$ = new til::declaration_node(LINE, tPUBLIC, $3, *$4, $5); delete $4; }
       | '(' tPUBLIC   tVAR tIDENTIFIER expr ')'   { $$ = new til::declaration_node(LINE, tPUBLIC, nullptr, *$4, $5); delete $4; }
-      | '(' tPUBLIC        tIDENTIFIER expr ')'   { $$ = new til::declaration_node(LINE, tPUBLIC, nullptr, *$3, $4); delete $4; }
+      | '(' tPUBLIC        tIDENTIFIER expr ')'   { $$ = new til::declaration_node(LINE, tPUBLIC, nullptr, *$3, $4); delete $3; }
       |           decl                            { $$ = $1; }
       ;
 
@@ -140,7 +140,6 @@ decl : '(' type  tIDENTIFIER      ')'    { $$ = new til::declaration_node(LINE, 
      | '(' type  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, $4); delete $3; }
      | '(' tVAR  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$3, $4); delete $3; }
      | '('       tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$2, $3); delete $2; }
-
      ;
 
 stmts : stmts stmt    { $$ = new cdk::sequence_node(LINE, $2, $1); }
