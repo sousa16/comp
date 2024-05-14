@@ -164,7 +164,7 @@ EXPR [Ee][+-]?[0-9]+
 
 
 
-[-()<>=+*/%;,@?~"]        return *yytext;
+[-()<>=+*/%;,@?~"!]        return *yytext;
 
 
 .                      yyerror("Unknown character");
