@@ -24,7 +24,7 @@
   std::shared_ptr<cdk::basic_type> type;        /* expression type */
   //-- don't change *any* of these --- END!
 
-  int                                             i;          /* integer value */
+  int                                             i;          /* in     teger value */
   double                                          d;          /* double value */
   std::string                                     *s;          /* symbol name or string literal */
   cdk::basic_node                                 *node;       /* node pointer */
@@ -51,7 +51,8 @@
 %right '='
 %left tGE tLE tEQ tNE tAND tOR '>' '<'
 %left '+' '-'
-%left '*' '/' '%'
+%nonassoc '~'
+%left '*' '/' '%' 
 %nonassoc tUNARY
 
 
@@ -62,6 +63,7 @@
 %type <block> list blk
 %type <expression> expr func_definition
 %type <lvalue> lval
+%type <s> string
 
 %{
 //-- The rules below will be included in yyparse, the main parsing function.
@@ -147,7 +149,7 @@ stmt  : expr                                         { $$ = new til::evaluation_
       | '(' tPRINT exprs ')'                         { $$ = new til::print_node(LINE, $3, false); }
       | '(' tPRINTLN exprs ')'                       { $$ = new til::print_node(LINE, $3, true); }
       | '(' tIF expr stmt ')'                        { $$ = new til::if_node(LINE, $3, $4); }
-      | '(' tIF expr stmt stmt ')'                        { $$ = new til::if_node(LINE, $3, $4); }
+      | '(' tIF expr stmt stmt ')'                   { $$ = new til::if_node(LINE, $3, $4); }
       | '(' tWHILE expr stmts ')'                    { $$ = new til::while_node(LINE, $3, $4); }
       | '(' tSTOP tINTEGER ')'                       { $$ = new til::stop_node(LINE, $3); }
       | '(' tSTOP ')'                                { $$ = new til::stop_node(LINE, 1); }
@@ -167,7 +169,7 @@ exprs : exprs expr    { $$ = new cdk::sequence_node(LINE, $2, $1); }
 
 expr : tINTEGER                                        { $$ = new cdk::integer_node(LINE, $1); }
      | tDOUBLE                                         { $$ = new cdk::double_node(LINE, $1); }
-     | tSTRING                                         { $$ = new cdk::string_node(LINE, *$1); delete $1; }
+     | string                                          { $$ = new cdk::string_node(LINE, *$1); delete $1; }
      | tNULL                                           { $$ = new til::nullptr_node(LINE); }
      | '(' '+' expr %prec tUNARY ')'                   { $$ = new cdk::unary_plus_node(LINE, $3); }
      | '(' '-' expr %prec tUNARY ')'                   { $$ = new cdk::unary_minus_node(LINE, $3); }
@@ -201,5 +203,9 @@ expr : tINTEGER                                        { $$ = new cdk::integer_n
 lval : tIDENTIFIER                   { $$ = new cdk::variable_node(LINE, $1); }
      | '(' tINDEX expr expr ')'      { $$ = new til::pointer_index_node(LINE, $3, $4); }
      ;
+
+string : string tSTRING    { $$ = $1; $$->append(*$2); delete $2; }
+       | tSTRING           { $$ = $1; }
+       ;
 
 %%

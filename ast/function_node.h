@@ -17,7 +17,7 @@
 namespace til {
 
 /**
- * Class for describing dfunction nodes.
+ * Class for describing function nodes.
  */
 class function_node : public cdk::expression_node {
     cdk::sequence_node *_args;

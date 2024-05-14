@@ -63,7 +63,7 @@ EXPR [Ee][+-]?[0-9]+
 "<="                   return tLE;
 "=="                   return tEQ;
 "!="                   return tNE;
-"&&"             	   return tAND;
+"&&"             	     return tAND;
 "||"                   return tOR;
 
   /* ====================================================================== */
@@ -79,10 +79,10 @@ EXPR [Ee][+-]?[0-9]+
   /* 	KEYWORDS                                                         */
   /* ====================================================================== */
 
-"external"			   return tEXTERNAL;
-"forward"			   return tFORWARD;
-"public"			   return tPUBLIC;
-"var"			 	   return tVAR;
+"external"			       return tEXTERNAL;
+"forward"			         return tFORWARD;
+"public"			         return tPUBLIC;
+"var"			 	           return tVAR;
 
 "block"                return tBLOCK;
 "if"                   return tIF;
@@ -98,10 +98,10 @@ EXPR [Ee][+-]?[0-9]+
 "set"                  return tSET;
 "index"                return tINDEX;
 "objects"              return tOBJECTS;
-"sizeof"			   return tSIZEOF;
-"function"			   return tFUNCTION;
+"sizeof"			         return tSIZEOF;
+"function"			       return tFUNCTION;
 
-"program"			   return tPROGRAM;
+"program"			         return tPROGRAM;
 
 
 "while"                return tWHILE;
@@ -165,7 +165,7 @@ EXPR [Ee][+-]?[0-9]+
 
 
 
-[-()<>=+*/%;{}."]       return *yytext;
+[-()<>=+*/%;,@?~"]        return *yytext;
 
 
 .                      yyerror("Unknown character");
