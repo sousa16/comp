@@ -86,7 +86,6 @@ EXPR [Ee][+-]?[0-9]+
 
 "block"                return tBLOCK;
 "if"                   return tIF;
-"loop"                 return tLOOP;
 "stop"                 return tSTOP;
 "next"                 return tNEXT;
 "return"               return tRETURN;
@@ -104,7 +103,7 @@ EXPR [Ee][+-]?[0-9]+
 "program"			         return tPROGRAM;
 
 
-"while"                return tWHILE;
+"loop"                 return tWHILE;
 "else"                 return tELSE;
 "begin"                return tBEGIN;
 "end"                  return tEND;

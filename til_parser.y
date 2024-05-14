@@ -38,15 +38,15 @@
 %token <i> tINTEGER
 %token <d> tDOUBLE
 %token <s> tIDENTIFIER tSTRING
-%token tTYPE_INT tTYPE_DOUBLE tTYPE_STRING tTYPE_VOID
+%token tTYPE_INT tTYPE_DOUBLE tTYPE_STRING tTYPE_VOID 
 %token tEXTERNAL tFORWARD tPUBLIC tPRIVATE tVAR
 %token tBLOCK tIF tLOOP tSTOP tNEXT tRETURN tPRINT tPRINTLN
 %token tREAD tNULL tSET tINDEX tOBJECTS tSIZEOF tFUNCTION
 %token tPROGRAM
-%token tWHILE tELSE tBEGIN tEND
+%token tWHILE tBEGIN tEND
 
 %nonassoc tIFX
-%nonassoc tELSE
+%nonassoc tELIF tELSE
 
 %right '='
 %left tGE tLE tEQ tNE tAND tOR '>' '<'
@@ -150,7 +150,7 @@ stmt  : expr                                         { $$ = new til::evaluation_
       | '(' tPRINTLN exprs ')'                       { $$ = new til::print_node(LINE, $3, true); }
       | '(' tIF expr stmt ')'                        { $$ = new til::if_node(LINE, $3, $4); }
       | '(' tIF expr stmt stmt ')'                   { $$ = new til::if_node(LINE, $3, $4); }
-      | '(' tWHILE expr stmts ')'                    { $$ = new til::while_node(LINE, $3, $4); }
+      | '(' tWHILE expr stmt ')'                     { $$ = new til::while_node(LINE, $3, $4); }
       | '(' tSTOP tINTEGER ')'                       { $$ = new til::stop_node(LINE, $3); }
       | '(' tSTOP ')'                                { $$ = new til::stop_node(LINE, 1); }
       | '(' tNEXT tINTEGER ')'                       { $$ = new til::next_node(LINE, $3); }
@@ -159,7 +159,7 @@ stmt  : expr                                         { $$ = new til::evaluation_
       | '(' tRETURN ')'                              { $$ = new til::return_node(LINE, nullptr); }
       | blk                                          { $$ = $1; }
       ;
-      
+
 blk : '(' tBLOCK list ')'    { $$ = $3; }
     ;
 
