@@ -42,7 +42,7 @@ class function_node : public cdk::expression_node {
 
     inline cdk::sequence_node *args() { return _args; }
 
-    inline cdk::basic_node *block() { return _block; }
+    inline til::block_node *block() { return _block; }
 
     void accept(basic_ast_visitor *sp, int level) { sp->do_function_node(this, level); }
 };

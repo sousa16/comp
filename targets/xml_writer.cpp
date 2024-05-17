@@ -30,9 +30,13 @@ void til::xml_writer::do_or_node(cdk::or_node* const node, int lvl) {
 
 void til::xml_writer::do_sequence_node(cdk::sequence_node* const node, int lvl) {
     os() << std::string(lvl, ' ') << "<sequence_node size='" << node->size() << "'>" << std::endl;
-    for (size_t i = 0; i < node->size(); i++)
-        node->node(i)->accept(this, lvl + 2);
-    closeTag(node, lvl);
+    for (size_t i = 0; i < node->size(); i++) {
+        auto child = node->node(i);
+        if (child) {
+            child->accept(this, lvl + 2);
+        }
+    }
+    closeTag("sequence_node", lvl);
 }
 
 //---------------------------------------------------------------------------
@@ -148,7 +152,7 @@ void til::xml_writer::do_assignment_node(cdk::assignment_node* const node, int l
     // ASSERT_SAFE_EXPRESSIONS;
     openTag(node, lvl);
 
-    node->lvalue()->accept(this, lvl);
+    node->lvalue()->accept(this, lvl + 2);
     reset_new_symbol();
 
     node->rvalue()->accept(this, lvl + 4);
@@ -159,7 +163,9 @@ void til::xml_writer::do_assignment_node(cdk::assignment_node* const node, int l
 
 void til::xml_writer::do_program_node(til::program_node* const node, int lvl) {
     openTag(node, lvl);
-    node->statements()->accept(this, lvl + 4);
+    if (node->block()) {
+        node->block()->accept(this, lvl + 2);
+    }
     closeTag(node, lvl);
 }
 
@@ -249,17 +255,15 @@ void til::xml_writer::do_sizeof_node(til::sizeof_node* const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::xml_writer::do_block_node(til::block_node* const node, int lvl) {
-    // ASSERT_SAFE_EXPRESSIONS;
-
     openTag(node, lvl);
-    _symtab.push();
+
     openTag("declarations", lvl + 2);
     node->declarations()->accept(this, lvl + 4);
     closeTag("declarations", lvl + 2);
     openTag("instructions", lvl + 2);
     node->instructions()->accept(this, lvl + 4);
+
     closeTag("instructions", lvl + 2);
-    _symtab.pop();
     closeTag(node, lvl);
 }
 
@@ -290,14 +294,12 @@ void til::xml_writer::do_function_node(til::function_node* const node, int lvl) 
     os() << std::string(lvl, ' ') << "<" << node->label() << " type='" << type_to_string(node->type()) << "'>" << std::endl;
 
     openTag(node, lvl);
-    _symtab.push();
     openTag("arguments", lvl + 2);
     node->args()->accept(this, lvl + 4);
     closeTag("arguments", lvl + 2);
     openTag("block", lvl + 2);
     node->block()->accept(this, lvl + 4);
     closeTag("block", lvl + 2);
-    _symtab.pop();
     closeTag(node, lvl);
 }
 

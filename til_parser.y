@@ -88,6 +88,15 @@ fdecl : '(' tEXTERNAL type tIDENTIFIER      ')'   { $$ = new til::declaration_no
       |           decl                            { $$ = $1; }
       ;
 
+decls : decls decl    { $$ = new cdk::sequence_node(LINE, $2, $1); }
+      |       decl    { $$ = new cdk::sequence_node(LINE, $1); }
+      ;
+
+decl : '(' type  tIDENTIFIER      ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, nullptr); delete $3; }
+     | '(' type  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, $4); delete $3; }
+     | '(' tVAR  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$3, $4); delete $3; }
+     ;
+
 type : referable_type    { $$ = $1; }
      | void_ref_type     { $$ = $1; }
      ;
@@ -122,23 +131,17 @@ func_definition : '(' tFUNCTION '(' func_return_type ')' list ')'           { $$
                 | '(' tFUNCTION '(' func_return_type decls ')' list ')'    { $$ = new til::function_node(LINE, $5, $4, $7); }
                 ;
 
-program : '(' tPROGRAM list ')' { compiler->ast(new til::program_node(LINE, $3)); }
+program : '(' tPROGRAM list ')' { std::cout << "Entering program rule" << std::endl;
+            // Construct program_node
+            $$ = new til::program_node(LINE, $3);
+            std::cout << "Exiting program rule" << std::endl;}
         ;
+           
 
 list : decls stmts   { $$ = new til::block_node(LINE, $1, $2); }
      | decls         { $$ = new til::block_node(LINE, $1, new cdk::sequence_node(LINE)); }
      |       stmts   { $$ = new til::block_node(LINE, new cdk::sequence_node(LINE), $1); }
      | /* empty */   { $$ = new til::block_node(LINE, new cdk::sequence_node(LINE), new cdk::sequence_node(LINE)); }
-     ;
-
-decls : decls decl    { $$ = new cdk::sequence_node(LINE, $2, $1); }
-      |       decl    { $$ = new cdk::sequence_node(LINE, $1); }
-      ;
-
-decl : '(' type  tIDENTIFIER      ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, nullptr); delete $3; }
-     | '(' type  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, $2, *$3, $4); delete $3; }
-     | '(' tVAR  tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$3, $4); delete $3; }
-     | '('       tIDENTIFIER expr ')'    { $$ = new til::declaration_node(LINE, tPRIVATE, nullptr, *$2, $3); delete $2; }
      ;
 
 stmts : stmts stmt    { $$ = new cdk::sequence_node(LINE, $2, $1); }
