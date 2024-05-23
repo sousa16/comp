@@ -6,10 +6,66 @@
 
 #include ".auto/all_nodes.h"  // automatically generated
 
+#include "til_parser.tab.h"
+
 #define ASSERT_UNSPEC                                                             \
     {                                                                             \
         if (node->type() != nullptr && !node->is_typed(cdk::TYPE_UNSPEC)) return; \
     }
+
+
+/*Auxiliar function to see if the types are the same*/
+
+bool til::type_checker::typeComparison(std::shared_ptr<cdk::basic_type> left,
+      std::shared_ptr<cdk::basic_type> right, bool value) {
+  if (left->name() == cdk::TYPE_UNSPEC || right->name() == cdk::TYPE_UNSPEC) {
+    return false;
+  } else if (left->name() == cdk::TYPE_FUNCTIONAL) {
+    if (right->name() != cdk::TYPE_FUNCTIONAL) {
+      return false;
+    }
+
+    auto leftFunc = cdk::functional_type::cast(left);
+    auto rightFunc = cdk::functional_type::cast(right);
+
+    if (leftFunc->input_length() != rightFunc->input_length()
+          || leftFunc->output_length() != rightFunc->output_length()) {
+      return false;
+    }
+
+    for (size_t i = 0; i < leftFunc->input_length(); i++) {
+      if (!typeComparison(rightFunc->input(i), leftFunc->input(i), value)) {
+        return false;
+      }
+    }
+
+    for (size_t i = 0; i < leftFunc->output_length(); i++) {
+      if (!typeComparison(leftFunc->output(i), rightFunc->output(i), value)) {
+        return false;
+      }
+    }
+
+    return true;
+  } else if (right->name() == cdk::TYPE_FUNCTIONAL) {
+    return false;
+  } else if (left->name() == cdk::TYPE_POINTER) {
+    if (right->name() != cdk::TYPE_POINTER) {
+      return false;
+    }
+
+    return typeComparison(cdk::reference_type::cast(left)->referenced(),
+        cdk::reference_type::cast(right)->referenced(), false);
+  } else if (right->name() == cdk::TYPE_POINTER) {
+      return false;
+  } else if (value && left->name() == cdk::TYPE_DOUBLE) {
+    return right->name() == cdk::TYPE_DOUBLE || right->name() == cdk::TYPE_INT;
+  } else {
+    return left == right;
+  }
+}
+
+
+
 
 //---------------------------------------------------------------------------
 
@@ -288,17 +344,174 @@ void til::type_checker::do_stop_node(til::stop_node *const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_return_node(til::return_node *const node, int lvl) {
-    // TODO
+	/*Checks the type declared in the function header*/
+	auto symbol = _symtab.find("@", 1);
+	if (symbol == nullptr) {
+		throw std::string("return statement outside begin end block");
+	}
+
+	std::shared_ptr<cdk::functional_type> functype = cdk::functional_type::cast(symbol->type());
+
+	auto returntype = functype->output(0);
+	auto returntype_name = returntype->name();
+
+	/* return has not expression*/
+	if (node->returnval() == nullptr) {
+		if (returntype_name != cdk::TYPE_VOID) {
+		throw std::string("no return value  for non void function");
+		}
+		return;
+	}
+
+	/* return has expression*/
+
+	if (returntype_name == cdk::TYPE_VOID) {
+		throw std::string("return value for void function");
+	}
+
+	node->returnval()->accept(this, lvl + 2);
+
+	if (!typeComparison(returntype, node->returnval()->type(), true)) {
+		throw std::string("wrong type for return expression");
+	}
+
+
+}
+
+
+void til::type_checker::do_function_node(til::function_node *const node, int lvl) {
+  // type of function_node is set in the AST node's constructor
+
+  auto function = til::make_symbol("@", node->type());
+  function->is_main(node->is_main());
+
+  if (!_symtab.insert(function->name(), function)) {
+    // if it can't insert, it's because it already exists in local context
+    _symtab.replace(function->name(), function);
+  }
 }
 
 void til::type_checker::do_declaration_node(til::declaration_node *const node, int lvl) {
-    // TODO
-}
+  if (node->type() == nullptr) { // auto
+    node->initializer()->accept(this, lvl + 2);
 
-void til::type_checker::do_function_node(til::function_node *const node, int lvl) {
-    // TODO
+    if (node->initializer()->is_typed(cdk::TYPE_UNSPEC)) {
+      node->initializer()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    } else if (node->initializer()->is_typed(cdk::TYPE_POINTER)) {
+      auto ref = cdk::reference_type::cast(node->initializer()->type());
+      if (ref->referenced()->name() == cdk::TYPE_UNSPEC) {
+        node->initializer()->type(cdk::reference_type::create(4,
+            cdk::primitive_type::create(4, cdk::TYPE_INT)));
+      }
+    } else if (node->initializer()->is_typed(cdk::TYPE_VOID)) {
+      throw std::string("cannot declare variable of type void");
+    }
+
+    node->type(node->initializer()->type());
+  } else { // not auto; node already has a type set
+    if (node->initializer() != nullptr) {
+      node->initializer()->accept(this, lvl + 2);
+
+      if (node->initializer()->is_typed(cdk::TYPE_UNSPEC)) {
+        if (node->is_typed(cdk::TYPE_DOUBLE)) {
+          node->initializer()->type(node->type());
+        } else {
+          // if node->type() is not an int, a type mismatch error will be thrown later
+          node->initializer()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+        }
+      } else if (node->initializer()->is_typed(cdk::TYPE_POINTER) && node->is_typed(cdk::TYPE_POINTER)) {
+        auto noderef = cdk::reference_type::cast(node->type());
+        auto initref = cdk::reference_type::cast(node->initializer()->type());
+        if (initref->referenced()->name() == cdk::TYPE_UNSPEC
+              || initref->referenced()->name() == cdk::TYPE_VOID
+              || noderef->referenced()->name() == cdk::TYPE_VOID) {
+          node->initializer()->type(node->type());
+        }
+      }
+
+      if (!typeComparison(node->type(), node->initializer()->type(), true)) {
+        throw std::string("wrong type in initializer for variable '" + node->identifier() + "'");
+      }
+    }
+  }
+
+  if (node->qualifier() == tEXTERNAL && !node->is_typed(cdk::TYPE_FUNCTIONAL)) {
+    throw std::string("foreign declaration of non-function '" + node->identifier() + "'");
+  }
+
+  auto symbol = make_symbol(node->identifier(), node->type(), node->qualifier());
+
+  if (_symtab.insert(node->identifier(), symbol)) {
+    _parent->set_new_symbol(symbol);
+    return;
+  }
+
+  auto prev = _symtab.find(node->identifier());
+
+  if (prev != nullptr && prev->qualifier() == tFORWARD) {
+    if (typeComparison(prev->type(), symbol->type(), false)) {
+      _symtab.replace(node->identifier(), symbol);
+      _parent->set_new_symbol(symbol);
+      return;
+    }
+  }
+
+  throw std::string("redeclaration of variable '" + node->identifier() + "'");
 }
 
 void til::type_checker::do_function_call_node(til::function_call_node *const node, int lvl) {
-    // TODO
+  	ASSERT_UNSPEC;
+
+  	std::shared_ptr<cdk::functional_type> functype;
+
+	if(node->func() == nullptr){ //recursive
+		auto symbol = _symtab.find("@", 1);
+		if (symbol == nullptr) {
+		throw std::string("recursive call outside function");
+		} else if (symbol->is_main()) {
+		throw std::string("recursive call inside begin end block");
+		}
+
+		functype = cdk::functional_type::cast(symbol->type());
+	} else{
+		node->func()->accept(this, lvl);
+
+		if(!node->func()->is_typed(cdk:: TYPE_FUNCTIONAL)){
+			throw std::string("wrong type in function call");
+		}
+	}
+	if (functype->input()->length() != node->arguments()->size()) {
+		throw std::string("wrong number of arguments in function call");
+	}
+
+	for (size_t i = 0; i < node->arguments()->size(); i++) {
+		auto arg = dynamic_cast<cdk::expression_node*>(node->arguments()->node(i));
+		arg->accept(this, lvl);
+
+		auto paramtype = functype->input(i);
+
+		if (arg->is_typed(cdk::TYPE_UNSPEC)) {
+		if (paramtype->name() == cdk::TYPE_DOUBLE) {
+			arg->type(cdk::primitive_type::create(8, cdk::TYPE_DOUBLE));
+		} else {
+			arg->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+		}
+		} else if (arg->is_typed(cdk::TYPE_POINTER) && paramtype->name() == cdk::TYPE_POINTER) {
+		auto paramref = cdk::reference_type::cast(paramtype);
+		auto argref = cdk::reference_type::cast(arg->type());
+
+		if (argref->referenced()->name() == cdk::TYPE_UNSPEC
+				|| argref->referenced()->name() == cdk::TYPE_VOID
+				|| paramref->referenced()->name() == cdk::TYPE_VOID) {
+			arg->type(paramtype);
+		}
+		}
+
+		if (!typeComparison(paramtype, arg->type(), true)) {
+		throw std::string("wrong type for argument " + std::to_string(i + 1) + " in function call");
+		}
+	}
+
+	// note this may result in this node being typed TYPE_VOID
+	node->type(functype->output(0));
 }

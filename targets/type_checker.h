@@ -24,6 +24,7 @@ namespace til {
     }
 
   protected:
+  	bool typeComparison(std::shared_ptr<cdk::basic_type> left, std::shared_ptr<cdk::basic_type> right, bool value);
     void processUnaryExpression(cdk::unary_operation_node *const node, int lvl);
     void processBinaryExpression(cdk::binary_operation_node *const node, int lvl);
     template<typename T>
