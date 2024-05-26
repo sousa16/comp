@@ -11,8 +11,8 @@ namespace til {
 class symbol {
     std::shared_ptr<cdk::basic_type> _type;
     std::string _name;
-	int _qualifier;
-    long _value; // hack!
+    int _qualifier;
+    long _value;  // hack!
 
    public:
     symbol(std::shared_ptr<cdk::basic_type> type, const std::string &name, long value) : _type(type), _name(name), _value(value) {
@@ -33,7 +33,7 @@ class symbol {
         return _name;
     }
     int qualifier() const {
-      return _qualifier;
+        return _qualifier;
     }
     long value() const {
         return _value;
@@ -41,7 +41,7 @@ class symbol {
     long value(long v) {
         return _value = v;
     }
-  };
+};
 
 }  // namespace til
 
