@@ -5,6 +5,7 @@
 
 #include ".auto/all_nodes.h"  // all_nodes.h is automatically generated
 #include "targets/type_checker.h"
+#include "til_parser.tab.h"
 
 //---------------------------------------------------------------------------
 
@@ -167,8 +168,15 @@ void til::postfix_writer::do_alloc_node(til::alloc_node* const node, int lvl) {
 
 void til::postfix_writer::do_variable_node(cdk::variable_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
-    // simplified generation: all variables are global
-    _pf.ADDR(node->name());
+    auto symbol = _symtab.find(node->name());  // type checker already ensured symbol exists
+
+    if (symbol->qualifier() == tEXTERNAL) {
+        // _externalFunctionName = symbol->name();
+    } else if (symbol->global()) {
+        _pf.ADDR(node->name());
+    } else {
+        _pf.LOCAL(symbol->offset());
+    }
 }
 
 void til::postfix_writer::do_pointer_index_node(til::pointer_index_node* const node, int lvl) {
