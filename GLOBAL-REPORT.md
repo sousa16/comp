@@ -6,8 +6,5 @@ Students whose result is **NO DELIVERY** (at each deadline) will be excluded fro
 
 Maximum file size: 1 MB. Maximum execution time: 5s.
 
-Tests for 202405261404 started at dom 26 mai 2024 14:04:24 WEST
+Tests for 202405261405 started at dom 26 mai 2024 14:05:03 WEST
 
-* 025 [res](logs/025.res.html) [log](logs/025.log.html) ✅ **SUCCESS: 0%**
-
-Tests for 202405261404 finished at  dom 26 mai 2024 14:04:33 WEST
