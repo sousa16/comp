@@ -22,7 +22,6 @@ namespace til {
 class function_node : public cdk::expression_node {
     cdk::sequence_node *_args;
     til::block_node *_block;
-	bool _is_main;
 
    public:
     function_node(int lineno,
@@ -44,8 +43,6 @@ class function_node : public cdk::expression_node {
     inline cdk::sequence_node *args() { return _args; }
 
     inline til::block_node *block() { return _block; }
-
-	inline bool is_main() { return _is_main;}
 
     void accept(basic_ast_visitor *sp, int level) { sp->do_function_node(this, level); }
 };

@@ -479,8 +479,38 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
         node->initializer()->accept(this, lvl);
     }
 }
+
 void til::postfix_writer::do_function_node(til::function_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+
+    std::string functionLabel;
+    functionLabel = mklbl(++_lbl);
+    _functionLabels.push(functionLabel);
+
+    // Start a new function definition
+    _pf.TEXT(_functionLabels.top());
+    _pf.ALIGN();
+
+    // Assuming the function name is defined elsewhere
+    _pf.GLOBAL(functionLabel, _pf.FUNC());
+    _pf.LABEL(_functionLabels.top());
+
+    // Compute the frame size manually
+    int frame_size = 0;
+    for (size_t i = 0; i < node->args()->size(); i++) {
+        auto arg = dynamic_cast<cdk::typed_node*>(node->args()->node(i));
+        frame_size += arg->type()->size();
+    }
+
+    // Set the frame size
+    _pf.ENTER(frame_size);
+
+    // Generate code for the function body
+    node->block()->accept(this, lvl + 2);
+
+    // End the function
+    _pf.LEAVE();
+    _pf.RET();
 }
 
 void til::postfix_writer::do_function_call_node(til::function_call_node* const node, int lvl) {
