@@ -371,11 +371,37 @@ void til::postfix_writer::do_block_node(til::block_node* const node, int lvl) {
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_next_node(til::next_node* const node, int lvl) {
-    // TODO
+    auto level = static_cast<size_t>(node->level());
+
+    if (level == 0) {
+        throw_error_for_node(node, "invalid loop control instruction level");
+    } else if (_currentFunctionLoopLabels->size() < level) {
+        throw_error_for_node(node, "loop control instruction not within sufficient loops (expected at most " +
+                                       std::to_string(_currentFunctionLoopLabels->size()) + ")");
+    }
+
+    auto index = _currentFunctionLoopLabels->size() - level;
+    auto label = std::get<0>(_currentFunctionLoopLabels->at(index));
+    _pf.JMP(label);
+
+    _visitedFinalInstruction = true;
 }
 
 void til::postfix_writer::do_stop_node(til::stop_node* const node, int lvl) {
-    // TODO
+    auto level = static_cast<size_t>(node->level());
+
+    if (level == 0) {
+        throw_error_for_node(node, "invalid loop control instruction level");
+    } else if (_currentFunctionLoopLabels->size() < level) {
+        throw_error_for_node(node, "loop control instruction not within sufficient loops (expected at most " +
+                                       std::to_string(_currentFunctionLoopLabels->size()) + ")");
+    }
+
+    auto index = _currentFunctionLoopLabels->size() - level;
+    auto label = std::get<1>(_currentFunctionLoopLabels->at(index));
+    _pf.JMP(label);
+
+    _visitedFinalInstruction = true;
 }
 
 void til::postfix_writer::do_return_node(til::return_node* const node, int lvl) {
