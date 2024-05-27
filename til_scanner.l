@@ -113,7 +113,7 @@ EXPR [Ee][+-]?[0-9]+
   /* 	IDENTIFIERS                                                      */
   /* ====================================================================== */
 
-[A-Za-z][A-Za-z0-9_]*  yylval.s = new std::string(yytext); return tIDENTIFIER;
+[A-Za-z][A-Za-z0-9]*  yylval.s = new std::string(yytext); return tIDENTIFIER;
 
   /* ====================================================================== */
   /* 	STRINGS                                                        */
@@ -148,6 +148,7 @@ EXPR [Ee][+-]?[0-9]+
   /* 	INTEGERS                                                       */
   /* ====================================================================== */
 
+0x0                     yyerror("0x0 is not a valid integer literal");
 0|[1-9][0-9]*          CHECKED_STOI(10);
 0x[0-9a-fA-F]+		   CHECKED_STOI(16);
 0x[0-9a-zA-Z]+		   yyerror("invalid base 16 integer literal");

@@ -64,7 +64,9 @@ bool til::type_checker::typeComparison(std::shared_ptr<cdk::basic_type> left,
 //---------------------------------------------------------------------------
 
 void til::type_checker::do_sequence_node(cdk::sequence_node *const node, int lvl) {
-    // EMPTY
+    for (size_t i = 0; i < node->size(); i++) {
+        node->node(i)->accept(this, lvl);
+    }
 }
 
 //---------------------------------------------------------------------------
@@ -76,16 +78,81 @@ void til::type_checker::do_data_node(cdk::data_node *const node, int lvl) {
     // EMPTY
 }
 void til::type_checker::do_double_node(cdk::double_node *const node, int lvl) {
-    // EMPTY
+    ASSERT_UNSPEC;
+    node->type(cdk::primitive_type::create(8, cdk::TYPE_DOUBLE));
 }
 void til::type_checker::do_not_node(cdk::not_node *const node, int lvl) {
-    // EMPTY
+    ASSERT_UNSPEC;
+
+    node->argument()->accept(this, lvl + 2);
+
+    if (node->argument()->is_typed(cdk::TYPE_UNSPEC)) {
+        node->argument()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    } else if (!node->argument()->is_typed(cdk::TYPE_INT)) {
+        throw std::string("wrong type in argument of unary expression");
+    }
+
+    node->type(node->argument()->type());
 }
 void til::type_checker::do_and_node(cdk::and_node *const node, int lvl) {
-    // EMPTY
+    ASSERT_UNSPEC;
+
+    node->left()->accept(this, lvl + 2);
+
+    if (node->left()->is_typed(cdk::TYPE_INT)) {
+        node->right()->accept(this, lvl + 2);
+
+        if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
+            node->right()->type(node->left()->type());
+        } else if (!node->right()->is_typed(cdk::TYPE_INT)) {
+            throw std::string("wrong type in right argument of arithmetic binary expression");
+        }
+    } else if (node->left()->is_typed(cdk::TYPE_UNSPEC)) {
+        node->right()->accept(this, lvl + 2);
+
+        if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
+            node->left()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+            node->right()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+        } else if (node->right()->is_typed(cdk::TYPE_INT)) {
+            node->left()->type(node->right()->type());
+        } else {
+            throw std::string("wrong type in right argument of arithmetic binary expression");
+        }
+    } else {
+        throw std::string("wrong type in left argument of arithmetic binary expression");
+    }
+
+    node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
 }
 void til::type_checker::do_or_node(cdk::or_node *const node, int lvl) {
-    // EMPTY
+    ASSERT_UNSPEC;
+
+    node->left()->accept(this, lvl + 2);
+
+    if (node->left()->is_typed(cdk::TYPE_INT)) {
+        node->right()->accept(this, lvl + 2);
+
+        if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
+            node->right()->type(node->left()->type());
+        } else if (!node->right()->is_typed(cdk::TYPE_INT)) {
+            throw std::string("wrong type in right argument of arithmetic binary expression");
+        }
+    } else if (node->left()->is_typed(cdk::TYPE_UNSPEC)) {
+        node->right()->accept(this, lvl + 2);
+
+        if (node->right()->is_typed(cdk::TYPE_UNSPEC)) {
+            node->left()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+            node->right()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+        } else if (node->right()->is_typed(cdk::TYPE_INT)) {
+            node->left()->type(node->right()->type());
+        } else {
+            throw std::string("wrong type in right argument of arithmetic binary expression");
+        }
+    } else {
+        throw std::string("wrong type in left argument of arithmetic binary expression");
+    }
+
+    node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
 }
 
 //---------------------------------------------------------------------------
@@ -264,7 +331,7 @@ void til::type_checker::do_assignment_node(cdk::assignment_node *const node, int
         }
     }
 
-    if (node->lvalue()->type() != node->rvalue()->type()) {
+    if (!typeComparison(node->lvalue()->type(), node->rvalue()->type(), true)) {
         throw std::string("wrong type in right argument of assignment expression");
     }
 

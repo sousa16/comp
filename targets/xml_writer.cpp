@@ -69,7 +69,7 @@ void til::xml_writer::do_unary_plus_node(cdk::unary_plus_node* const node, int l
 //---------------------------------------------------------------------------
 
 void til::xml_writer::do_binary_operation(cdk::binary_operation_node* const node, int lvl) {
-    // ASSERT_SAFE_EXPRESSIONS;
+    ASSERT_SAFE_EXPRESSIONS;
     openTag(node, lvl);
     node->left()->accept(this, lvl + 2);
     node->right()->accept(this, lvl + 2);
