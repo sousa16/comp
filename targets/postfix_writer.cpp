@@ -350,7 +350,22 @@ void til::postfix_writer::do_sizeof_node(til::sizeof_node* const node, int lvl) 
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_block_node(til::block_node* const node, int lvl) {
-    // TODO
+    _symtab.push();  // for block-local variables
+    node->declarations()->accept(this, lvl + 2);
+
+    _visitedFinalInstruction = false;
+    for (size_t i = 0; i < node->instructions()->size(); i++) {
+        auto child = node->instructions()->node(i);
+
+        if (_visitedFinalInstruction) {
+            throw_error_for_node(child, "unreachable code; further instructions found after a final instruction");
+        }
+
+        child->accept(this, lvl + 2);
+    }
+    _visitedFinalInstruction = false;
+
+    _symtab.pop();
 }
 
 //---------------------------------------------------------------------------

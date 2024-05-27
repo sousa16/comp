@@ -543,6 +543,5 @@ void til::type_checker::do_function_call_node(til::function_call_node *const nod
         }
     }
 
-    // note this may result in this node being typed TYPE_VOID
     node->type(functype->output(0));
 }
