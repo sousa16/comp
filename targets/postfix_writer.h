@@ -7,6 +7,7 @@
 #include <optional>
 #include <set>
 #include <sstream>
+#include <stack>
 
 #include "targets/basic_ast_visitor.h"
 
@@ -20,9 +21,13 @@ class postfix_writer : public basic_ast_visitor {
     cdk::basic_postfix_emitter &_pf;
     int _lbl;
 
+    bool _forceOutsideFunction = false;       // whether to force future declarations to be global
+    std::stack<std::string> _functionLabels;  // (history of) label of current visiting function
+    bool _inFunctionArgs = false;
     std::optional<std::string> _externalFunctionName;
     std::set<std::string> _externalFunctionsToDeclare;
     std::string _currentFunctionRetLabel;  // where to jump when a return occurs
+    int _offset;                           // current offset for local variables
     std::vector<std::pair<std::string, std::string>> *_currentFunctionLoopLabels;
 
     bool _visitedFinalInstruction = false;
@@ -46,6 +51,10 @@ class postfix_writer : public basic_ast_visitor {
         else
             oss << "_L" << lbl;
         return oss.str();
+    }
+
+    inline bool inFunction() {
+        return !_forceOutsideFunction && !_functionLabels.empty();
     }
 
    public:

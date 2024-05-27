@@ -428,9 +428,57 @@ void til::postfix_writer::do_return_node(til::return_node* const node, int lvl) 
 }
 
 void til::postfix_writer::do_declaration_node(til::declaration_node* const node, int lvl) {
-    // TODO
-}
+    ASSERT_SAFE_EXPRESSIONS;
 
+    auto symbol = new_symbol();
+    reset_new_symbol();
+
+    int offset = 0;
+    int typesize = node->type()->size();  // in bytes
+    if (_inFunctionArgs) {
+        offset = _offset;
+        _offset += typesize;
+    } else if (inFunction()) {
+        _offset -= typesize;
+        offset = _offset;
+    } else {
+        // global variable
+        offset = 0;
+    }
+    symbol->offset(offset);
+
+    // function local variables have to be handled separately
+    if (inFunction()) {
+        // nothing to do for function args or local variables without initializer
+        if (_inFunctionArgs || node->initializer() == nullptr) {
+            return;
+        }
+
+        node->initializer()->accept(this, lvl);
+        if (node->is_typed(cdk::TYPE_DOUBLE)) {
+            _pf.LOCAL(symbol->offset());
+            _pf.STFVAL64();
+        } else {
+            _pf.LOCAL(symbol->offset());
+            _pf.STFVAL32();
+        }
+
+        return;
+    }
+
+    // global variable
+    if (node->initializer() == nullptr) {
+        _pf.BSS();
+        _pf.ALIGN();
+        _pf.LABEL(symbol->name());
+        _pf.SALLOC(typesize);
+    } else {
+        _pf.DATA();
+        _pf.ALIGN();
+        _pf.LABEL(symbol->name());
+        node->initializer()->accept(this, lvl);
+    }
+}
 void til::postfix_writer::do_function_node(til::function_node* const node, int lvl) {
     // TODO
 }
