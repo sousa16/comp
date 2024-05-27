@@ -514,5 +514,41 @@ void til::postfix_writer::do_function_node(til::function_node* const node, int l
 }
 
 void til::postfix_writer::do_function_call_node(til::function_call_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+
+    std::shared_ptr<cdk::functional_type> func_type;
+    if (node->func() == nullptr) {  // recursive call; "@"
+        auto symbol = _symtab.find("@", 1);
+        func_type = cdk::functional_type::cast(symbol->type());
+    } else {
+        func_type = cdk::functional_type::cast(node->func()->type());
+    }
+
+    int args_size = 0;
+    // arguments must be visited in reverse order since the first argument has to be
+    // on top of the stack
+    for (size_t i = node->arguments()->size(); i > 0; i--) {
+        auto arg = dynamic_cast<cdk::expression_node*>(node->arguments()->node(i - 1));
+
+        args_size += arg->type()->size();
+        arg->accept(this, lvl + 2);
+    }
+
+    if (node->func() == nullptr) {  // recursive call; "@"
+        _pf.ADDR(_functionLabels.top());
+    } else {
+        node->func()->accept(this, lvl);
+    }
+
+    _pf.CALL(_functionLabels.top());
+
+    if (args_size > 0) {
+        _pf.TRASH(args_size);
+    }
+
+    if (node->is_typed(cdk::TYPE_DOUBLE)) {
+        _pf.LDFVAL64();
+    } else if (!node->is_typed(cdk::TYPE_VOID)) {
+        _pf.LDFVAL32();
+    }
 }
