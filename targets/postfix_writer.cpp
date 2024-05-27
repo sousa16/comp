@@ -405,7 +405,26 @@ void til::postfix_writer::do_stop_node(til::stop_node* const node, int lvl) {
 }
 
 void til::postfix_writer::do_return_node(til::return_node* const node, int lvl) {
-    // TODO
+    ASSERT_SAFE_EXPRESSIONS;
+
+    // symbol is validated in type checker, we are sure it exists
+    auto symbol = _symtab.find("@", 1);
+    auto rettype = cdk::functional_type::cast(symbol->type())->output(0);
+    auto rettype_name = rettype->name();
+
+    if (rettype_name != cdk::TYPE_VOID) {
+        node->returnval()->accept(this, lvl + 2);
+
+        if (rettype_name == cdk::TYPE_DOUBLE) {
+            _pf.STFVAL64();
+        } else {
+            _pf.STFVAL32();
+        }
+    }
+
+    _pf.JMP(_currentFunctionRetLabel);
+
+    _visitedFinalInstruction = true;
 }
 
 void til::postfix_writer::do_declaration_node(til::declaration_node* const node, int lvl) {

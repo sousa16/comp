@@ -22,6 +22,7 @@ class postfix_writer : public basic_ast_visitor {
 
     std::optional<std::string> _externalFunctionName;
     std::set<std::string> _externalFunctionsToDeclare;
+    std::string _currentFunctionRetLabel;  // where to jump when a return occurs
     std::vector<std::pair<std::string, std::string>> *_currentFunctionLoopLabels;
 
     bool _visitedFinalInstruction = false;
