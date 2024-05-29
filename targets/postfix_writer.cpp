@@ -15,6 +15,18 @@ void til::postfix_writer::do_nil_node(cdk::nil_node* const node, int lvl) {
 void til::postfix_writer::do_data_node(cdk::data_node* const node, int lvl) {
     // EMPTY
 }
+void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
+    // EMPTY
+}
+void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
+    // EMPTY
+}
+void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
+    // EMPTY
+}
+void til::postfix_writer::do_or_node(cdk::or_node* const node, int lvl) {
+    // EMPTY
+}
 
 //---------------------------------------------------------------------------
 
@@ -27,19 +39,7 @@ void til::postfix_writer::do_sequence_node(cdk::sequence_node* const node, int l
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_integer_node(cdk::integer_node* const node, int lvl) {
-    if (inFunction()) {
-        _pf.INT(node->value());  // push an integer
-    } else {
-        _pf.SINT(node->value());
-    }
-}
-
-void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
-    if (inFunction()) {
-        _pf.DOUBLE(node->value());
-    } else {
-        _pf.SDOUBLE(node->value());
-    }
+    _pf.INT(node->value());  // push an integer
 }
 
 void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) {
@@ -51,49 +51,9 @@ void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) 
     _pf.LABEL(mklbl(lbl1 = ++_lbl));  // give the string a name
     _pf.SSTRING(node->value());       // output string characters
 
-    if (inFunction()) {
-        /* leave the address on the stack */
-        _pf.TEXT(_functionLabels.top());  // return to the TEXT segment
-        _pf.ADDR(mklbl(lbl1));            // the string to be stored
-    } else {
-        _pf.DATA();              // return to the DATA segment
-        _pf.SADDR(mklbl(lbl1));  // the string to be stored
-    }
-}
-
-//---------------------------------------------------------------------------
-
-void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
-    ASSERT_SAFE_EXPRESSIONS;
-
-    node->argument()->accept(this, lvl + 2);
-    _pf.INT(0);
-    _pf.EQ();
-}
-
-void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
-    ASSERT_SAFE_EXPRESSIONS;
-
-    int lbl;
-    node->left()->accept(this, lvl);
-    _pf.DUP32();
-    _pf.JZ(mklbl(lbl = ++_lbl));  // short circuit
-    node->right()->accept(this, lvl);
-    _pf.AND();
-    _pf.ALIGN();
-    _pf.LABEL(mklbl(lbl));
-}
-void til::postfix_writer::do_or_node(cdk::or_node* const node, int lvl) {
-    ASSERT_SAFE_EXPRESSIONS;
-
-    int lbl;
-    node->left()->accept(this, lvl);
-    _pf.DUP32();
-    _pf.JNZ(mklbl(lbl = ++_lbl));  // short circuit
-    node->right()->accept(this, lvl);
-    _pf.OR();
-    _pf.ALIGN();
-    _pf.LABEL(mklbl(lbl));
+    /* leave the address on the stack */
+    _pf.TEXT();             // return to the TEXT segment
+    _pf.ADDR(mklbl(lbl1));  // the string to be printed
 }
 
 //---------------------------------------------------------------------------
@@ -539,6 +499,9 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     if (node->is_typed(cdk::TYPE_DOUBLE) && node->initializer()->is_typed(cdk::TYPE_INT)) {
         auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
         _pf.SDOUBLE(int_node->value());
+    } else if (node->is_typed(cdk::TYPE_INT)) {
+        auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
+        _pf.SINT(int_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
