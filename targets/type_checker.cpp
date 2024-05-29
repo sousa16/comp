@@ -109,20 +109,26 @@ void til::type_checker::do_string_node(cdk::string_node *const node, int lvl) {
 
 //---------------------------------------------------------------------------
 
-void til::type_checker::processUnaryExpression(cdk::unary_operation_node *const node, int lvl) {
-    node->argument()->accept(this, lvl + 2);
-    if (!node->argument()->is_typed(cdk::TYPE_INT)) throw std::string("wrong type in argument of unary expression");
+void til::type_checker::processUnaryExpression(cdk::unary_operation_node *const node, int lvl, bool acceptDoubles) {
+    ASSERT_UNSPEC;
 
-    // in Simple, expressions are always int
-    node->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    node->argument()->accept(this, lvl + 2);
+
+    if (node->argument()->is_typed(cdk::TYPE_UNSPEC)) {
+        node->argument()->type(cdk::primitive_type::create(4, cdk::TYPE_INT));
+    } else if (!node->argument()->is_typed(cdk::TYPE_INT) && !(acceptDoubles && node->argument()->is_typed(cdk::TYPE_DOUBLE))) {
+        throw std::string("wrong type in argument of unary expression");
+    }
+
+    node->type(node->argument()->type());
 }
 
 void til::type_checker::do_unary_minus_node(cdk::unary_minus_node *const node, int lvl) {
-    processUnaryExpression(node, lvl);
+    processUnaryExpression(node, lvl, true);
 }
 
 void til::type_checker::do_unary_plus_node(cdk::unary_plus_node *const node, int lvl) {
-    processUnaryExpression(node, lvl);
+    processUnaryExpression(node, lvl, true);
 }
 
 //---------------------------------------------------------------------------
