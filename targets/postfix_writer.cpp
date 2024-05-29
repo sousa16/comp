@@ -431,11 +431,11 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     ASSERT_SAFE_EXPRESSIONS;
 
     auto symbol = new_symbol();
-
     reset_new_symbol();
 
     int offset = 0;
     int typesize = node->type()->size();  // in bytes
+
     if (_inFunctionArgs) {
         offset = _offset;
         _offset += typesize;
@@ -448,9 +448,9 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     }
     symbol->offset(offset);
 
-    // function local variables have to be handled separately
+    // Function local variables
     if (inFunction()) {
-        // nothing to do for function args or local variables without initializer
+        // Nothing to do for function args or local variables without initializer
         if (_inFunctionArgs || node->initializer() == nullptr) {
             return;
         }
@@ -467,7 +467,7 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
         return;
     }
 
-    // global variable
+    // Global variable
     if (node->initializer() == nullptr) {
         _pf.BSS();
         _pf.ALIGN();
@@ -481,8 +481,8 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
         return;
     }
 
-    if (!isInstanceOf<cdk::integer_node, cdk::double_node, cdk::string_node,
-                      til::nullptr_node, til::function_node>(node->initializer())) {
+    // Check if initializer is a valid literal
+    if (!isInstanceOf<cdk::integer_node, cdk::double_node, cdk::string_node, til::nullptr_node, til::function_node>(node->initializer())) {
         THROW_ERROR("non-literal initializer for global variable '" + symbol->name() + "'");
     }
 
@@ -495,11 +495,16 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
 
     _pf.LABEL(symbol->name());
 
+    // Handle integer to double promotion
     if (node->is_typed(cdk::TYPE_DOUBLE) && node->initializer()->is_typed(cdk::TYPE_INT)) {
-        // The global declaration `double d = 1;` has to alloc a double and not an integer,
-        // so we can't visit the integer_node.
         auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
         _pf.SDOUBLE(int_node->value());
+    } else if (node->is_typed(cdk::TYPE_INT)) {
+        auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
+        _pf.SINT(int_node->value());
+    } else if (node->is_typed(cdk::TYPE_STRING)) {
+        auto str_node = dynamic_cast<cdk::string_node*>(node->initializer());
+        _pf.SSTRING(str_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
