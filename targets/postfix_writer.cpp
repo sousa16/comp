@@ -502,9 +502,6 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     } else if (node->is_typed(cdk::TYPE_INT)) {
         auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
         _pf.SINT(int_node->value());
-    } else if (node->is_typed(cdk::TYPE_STRING)) {
-        auto str_node = dynamic_cast<cdk::string_node*>(node->initializer());
-        _pf.SSTRING(str_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
