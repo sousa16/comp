@@ -553,6 +553,8 @@ void til::type_checker::do_declaration_node(til::declaration_node *const node, i
                 node->initializer()->type(cdk::reference_type::create(4,
                                                                       cdk::primitive_type::create(4, cdk::TYPE_INT)));
             }
+        } else if (node->initializer()->is_typed(cdk::TYPE_STRING)) {
+            node->initializer()->type(cdk::primitive_type::create(4, cdk::TYPE_STRING));
         } else if (node->initializer()->is_typed(cdk::TYPE_VOID)) {
             throw std::string("cannot declare variable of type void");
         }
@@ -565,6 +567,8 @@ void til::type_checker::do_declaration_node(til::declaration_node *const node, i
 
             if (node->initializer()->is_typed(cdk::TYPE_UNSPEC)) {
                 if (node->is_typed(cdk::TYPE_DOUBLE)) {
+                    node->initializer()->type(node->type());
+                } else if (node->is_typed(cdk::TYPE_STRING)) {
                     node->initializer()->type(node->type());
                 } else {
                     // if node->type() is not an int, a type mismatch error will be thrown later
