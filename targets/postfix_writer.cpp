@@ -18,9 +18,7 @@ void til::postfix_writer::do_data_node(cdk::data_node* const node, int lvl) {
 void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
     // EMPTY
 }
-void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
-    // EMPTY
-}
+
 void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
     // EMPTY
 }
@@ -54,6 +52,16 @@ void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) 
     /* leave the address on the stack */
     _pf.TEXT();             // return to the TEXT segment
     _pf.ADDR(mklbl(lbl1));  // the string to be printed
+}
+
+//---------------------------------------------------------------------------
+
+void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+
+    node->argument()->accept(this, lvl + 2);
+    _pf.INT(0);
+    _pf.EQ();
 }
 
 //---------------------------------------------------------------------------
