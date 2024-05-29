@@ -559,6 +559,7 @@ void til::type_checker::do_declaration_node(til::declaration_node *const node, i
 
         node->type(node->initializer()->type());
     } else {  // not auto; node already has a type set
+
         if (node->initializer() != nullptr) {
             node->initializer()->accept(this, lvl + 2);
 

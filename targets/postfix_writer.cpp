@@ -431,6 +431,7 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     ASSERT_SAFE_EXPRESSIONS;
 
     auto symbol = new_symbol();
+
     reset_new_symbol();
 
     int offset = 0;
@@ -470,12 +471,36 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     if (node->initializer() == nullptr) {
         _pf.BSS();
         _pf.ALIGN();
+
+        if (symbol->qualifier() == tPUBLIC) {
+            _pf.GLOBAL(symbol->name(), _pf.OBJ());
+        }
+
         _pf.LABEL(symbol->name());
         _pf.SALLOC(typesize);
+        return;
+    }
+
+    if (!isInstanceOf<cdk::integer_node, cdk::double_node, cdk::string_node,
+                      til::nullptr_node, til::function_node>(node->initializer())) {
+        THROW_ERROR("non-literal initializer for global variable '" + symbol->name() + "'");
+    }
+
+    _pf.DATA();
+    _pf.ALIGN();
+
+    if (symbol->qualifier() == tPUBLIC) {
+        _pf.GLOBAL(symbol->name(), _pf.OBJ());
+    }
+
+    _pf.LABEL(symbol->name());
+
+    if (node->is_typed(cdk::TYPE_DOUBLE) && node->initializer()->is_typed(cdk::TYPE_INT)) {
+        // The global declaration `double d = 1;` has to alloc a double and not an integer,
+        // so we can't visit the integer_node.
+        auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
+        _pf.SDOUBLE(int_node->value());
     } else {
-        _pf.DATA();
-        _pf.ALIGN();
-        _pf.LABEL(symbol->name());
         node->initializer()->accept(this, lvl);
     }
 }

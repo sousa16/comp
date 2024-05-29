@@ -57,6 +57,15 @@ class postfix_writer : public basic_ast_visitor {
         return !_forceOutsideFunction && !_functionLabels.empty();
     }
 
+    template <class T>
+    inline bool isInstanceOf(cdk::basic_node *const node) {
+        return dynamic_cast<T *>(node) != nullptr;
+    }
+    template <class T, class... Rest, typename std::enable_if<sizeof...(Rest) != 0, int>::type = 0>
+    inline bool isInstanceOf(cdk::basic_node *const node) {
+        return dynamic_cast<T *>(node) != nullptr || isInstanceOf<Rest...>(node);
+    }
+
    public:
     // do not edit these lines
 #define __IN_VISITOR_HEADER__
