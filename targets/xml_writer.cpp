@@ -282,7 +282,7 @@ void til::xml_writer::do_stop_node(til::stop_node* const node, int lvl) {
 }
 
 void til::xml_writer::do_return_node(til::return_node* const node, int lvl) {
-    ASSERT_SAFE_EXPRESSIONS;
+    // ASSERT_SAFE_EXPRESSIONS;
 
     if (node->returnval() == nullptr) {
         emptyTag(node, lvl);
@@ -294,7 +294,7 @@ void til::xml_writer::do_return_node(til::return_node* const node, int lvl) {
 }
 
 void til::xml_writer::do_function_node(til::function_node* const node, int lvl) {
-    // ASSERT_SAFE_EXPRESSIONS;
+    ASSERT_SAFE_EXPRESSIONS;
     os() << std::string(lvl, ' ') << "<" << node->label() << " type='" << type_to_string(node->type()) << "'>" << std::endl;
 
     openTag("arguments", lvl + 2);
