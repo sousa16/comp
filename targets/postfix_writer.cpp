@@ -539,9 +539,6 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     if (node->is_typed(cdk::TYPE_DOUBLE) && node->initializer()->is_typed(cdk::TYPE_INT)) {
         auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
         _pf.SDOUBLE(int_node->value());
-    } else if (node->is_typed(cdk::TYPE_INT)) {
-        auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
-        _pf.SINT(int_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
