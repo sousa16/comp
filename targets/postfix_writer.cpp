@@ -671,7 +671,7 @@ void til::postfix_writer::do_function_node(til::function_node* const node, int l
     _symtab.push();
 
     _inFunctionArgs = true;
-    node->arguments()->accept(this, lvl);
+    node->args()->accept(this, lvl);
     _inFunctionArgs = false;
 
     // Compute the frame size manually
