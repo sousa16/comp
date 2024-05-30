@@ -294,7 +294,7 @@ void til::postfix_writer::do_variable_node(cdk::variable_node* const node, int l
     auto symbol = _symtab.find(node->name());  // type checker already ensured symbol exists
 
     if (symbol->qualifier() == tEXTERNAL) {
-        // _externalFunctionName = symbol->name();
+        _externalFunctionName = symbol->name();
     } else if (symbol->global()) {
         _pf.ADDR(node->name());
     } else {
@@ -314,7 +314,16 @@ void til::postfix_writer::do_pointer_index_node(til::pointer_index_node* const n
 void til::postfix_writer::do_rvalue_node(cdk::rvalue_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
     node->lvalue()->accept(this, lvl);
-    _pf.LDINT();  // depends on type size
+
+    if (_externalFunctionName) {
+        return;  // name passed through this field; nothing in stack to be loaded
+    }
+
+    if (node->is_typed(cdk::TYPE_DOUBLE)) {
+        _pf.LDDOUBLE();
+    } else {
+        _pf.LDINT();  // non-ints are int-sized too
+    }
 }
 
 void til::postfix_writer::do_assignment_node(cdk::assignment_node* const node, int lvl) {
