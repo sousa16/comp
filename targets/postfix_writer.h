@@ -58,7 +58,7 @@ class postfix_writer : public basic_ast_visitor {
     }
 
     inline bool inFunction() {
-        return !_functionLabels.empty();
+        return !_forceOutsideFunction && !_functionLabels.empty();
     }
 
     template <class T>
