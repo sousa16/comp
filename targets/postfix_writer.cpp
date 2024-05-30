@@ -16,13 +16,6 @@ void til::postfix_writer::do_data_node(cdk::data_node* const node, int lvl) {
     // EMPTY
 }
 
-void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
-    // EMPTY
-}
-void til::postfix_writer::do_or_node(cdk::or_node* const node, int lvl) {
-    // EMPTY
-}
-
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_sequence_node(cdk::sequence_node* const node, int lvl) {
@@ -84,6 +77,22 @@ void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) 
 }
 
 //---------------------------------------------------------------------------
+
+void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
+    ASSERT_SAFE_EXPRESSIONS;
+
+    int lbl;
+    node->left()->accept(this, lvl);
+    _pf.DUP32();
+    _pf.JZ(mklbl(lbl = ++_lbl));  // short circuit
+    node->right()->accept(this, lvl);
+    _pf.AND();
+    _pf.ALIGN();
+    _pf.LABEL(mklbl(lbl));
+}
+void til::postfix_writer::do_or_node(cdk::or_node* const node, int lvl) {
+    // EMPTY
+}
 
 void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
