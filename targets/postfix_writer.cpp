@@ -437,34 +437,11 @@ void til::postfix_writer::do_while_node(til::while_node* const node, int lvl) {
     node->condition()->accept(this, lvl);
     _pf.JZ(mklbl(lbl2 = ++_lbl));
 
-    _currentFunctionLoopLabels->push_back(std::make_pair(mklbl(lbl1), mklbl(lbl2)));
     node->block()->accept(this, lvl + 2);
-    _currentFunctionLoopLabels->pop_back();
 
     _pf.JMP(mklbl(lbl1));
     _pf.ALIGN();
     _pf.LABEL(mklbl(lbl2));
-
-    /*
-    ASSERT_SAFE_EXPRESSIONS;
-
-    int condLabel, endLabel;
-
-    _pf.ALIGN();
-    _pf.LABEL(mklbl(condLabel = ++_lbl));
-    node->condition()->accept(this, lvl);
-    _pf.JZ(mklbl(endLabel = ++_lbl));
-
-    _currentFunctionLoopLabels->push_back(std::make_pair(mklbl(condLabel), mklbl(endLabel)));
-    node->block()->accept(this, lvl + 2);
-    _visitedFinalInstruction = false;  // in case it's not a block_node, but a single instruction
-    _currentFunctionLoopLabels->pop_back();
-
-    _pf.JMP(mklbl(condLabel));
-    _pf.ALIGN();
-    _pf.LABEL(mklbl(endLabel));
-}
-    */
 }
 
 //---------------------------------------------------------------------------
