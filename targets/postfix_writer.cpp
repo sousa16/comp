@@ -15,9 +15,6 @@ void til::postfix_writer::do_nil_node(cdk::nil_node* const node, int lvl) {
 void til::postfix_writer::do_data_node(cdk::data_node* const node, int lvl) {
     // EMPTY
 }
-void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
-    // EMPTY
-}
 
 void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
     // EMPTY
@@ -42,6 +39,10 @@ void til::postfix_writer::do_integer_node(cdk::integer_node* const node, int lvl
     } else {
         _pf.SINT(node->value());
     }
+}
+
+void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
+    // EMPTY
 }
 
 void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) {
