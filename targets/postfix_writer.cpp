@@ -430,6 +430,21 @@ void til::postfix_writer::do_read_node(til::read_node* const node, int lvl) {
 
 void til::postfix_writer::do_while_node(til::while_node* const node, int lvl) {
     ASSERT_SAFE_EXPRESSIONS;
+    int lbl1, lbl2;
+
+    _pf.ALIGN();
+    _pf.LABEL(mklbl(lbl1 = ++_lbl));
+    node->condition()->accept(this, lvl);
+    _pf.JZ(mklbl(lbl2 = ++_lbl));
+
+    node->block()->accept(this, lvl + 2);
+
+    _pf.JMP(mklbl(lbl1));
+    _pf.ALIGN();
+    _pf.LABEL(mklbl(lbl2));
+
+    /*
+    ASSERT_SAFE_EXPRESSIONS;
 
     int condLabel, endLabel;
 
@@ -446,6 +461,8 @@ void til::postfix_writer::do_while_node(til::while_node* const node, int lvl) {
     _pf.JMP(mklbl(condLabel));
     _pf.ALIGN();
     _pf.LABEL(mklbl(endLabel));
+}
+    */
 }
 
 //---------------------------------------------------------------------------
