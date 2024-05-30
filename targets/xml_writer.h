@@ -31,6 +31,14 @@ class xml_writer : public basic_ast_visitor {
     void openTag(const cdk::basic_node *node, int lvl) {
         openTag(node->label(), lvl);
     }
+    template <class... Attributes>
+    void openTagWithAttributes(const std::string &tag, int lvl, bool empty, Attributes &&...attrs) {
+        os() << std::string(lvl, ' ') + "<" + tag;
+
+        ((os() << " " << std::get<0>(attrs) << "=\"" << std::get<1>(attrs) << "\""), ...);
+
+        os() << (empty ? " />" : ">") << std::endl;
+    }
     void closeTag(const std::string &tag, int lvl) {
         os() << std::string(lvl, ' ') + "</" + tag + ">" << std::endl;
     }
@@ -43,6 +51,10 @@ class xml_writer : public basic_ast_visitor {
     }
     void emptyTag(const cdk::basic_node *node, int lvl) {
         emptyTag(node->label(), lvl);
+    }
+    template <class... Attributes>
+    void emptyTagWithAttributes(const cdk::basic_node *node, int lvl, Attributes &&...attrs) {
+        openTagWithAttributes(node->label(), lvl, true, attrs...);
     }
 
    protected:

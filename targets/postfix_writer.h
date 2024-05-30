@@ -45,6 +45,8 @@ class postfix_writer : public basic_ast_visitor {
    protected:
     void prepareIDBinaryExpression(cdk::binary_operation_node *const node, int lvl);
     void prepareIDBinaryComparisonExpression(cdk::binary_operation_node *const node, int lvl);
+    template <size_t P, typename T>
+    void executeLoopControlInstruction(T *const node);
 
    private:
     /** Method used to generate sequential labels. */
