@@ -91,7 +91,16 @@ void til::postfix_writer::do_and_node(cdk::and_node* const node, int lvl) {
     _pf.LABEL(mklbl(lbl));
 }
 void til::postfix_writer::do_or_node(cdk::or_node* const node, int lvl) {
-    // EMPTY
+    ASSERT_SAFE_EXPRESSIONS;
+
+    int lbl;
+    node->left()->accept(this, lvl);
+    _pf.DUP32();
+    _pf.JNZ(mklbl(lbl = ++_lbl));  // short circuit
+    node->right()->accept(this, lvl);
+    _pf.OR();
+    _pf.ALIGN();
+    _pf.LABEL(mklbl(lbl));
 }
 
 void til::postfix_writer::do_not_node(cdk::not_node* const node, int lvl) {
