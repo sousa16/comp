@@ -638,11 +638,6 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     else if (node->is_typed(cdk::TYPE_DOUBLE)) {
         auto double_node = dynamic_cast<cdk::double_node*>(node->initializer());
         _pf.SDOUBLE(double_node->value());
-    }
-    // Handle string
-    else if (node->is_typed(cdk::TYPE_STRING)) {
-        auto string_node = dynamic_cast<cdk::string_node*>(node->initializer());
-        _pf.SSTRING(string_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
