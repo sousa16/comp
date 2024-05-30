@@ -37,7 +37,11 @@ void til::postfix_writer::do_sequence_node(cdk::sequence_node* const node, int l
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_integer_node(cdk::integer_node* const node, int lvl) {
-    _pf.INT(node->value());  // push an integer
+    if (inFunction()) {
+        _pf.INT(node->value());  // push an integer
+    } else {
+        _pf.SINT(node->value());
+    }
 }
 
 void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) {
@@ -507,9 +511,6 @@ void til::postfix_writer::do_declaration_node(til::declaration_node* const node,
     if (node->is_typed(cdk::TYPE_DOUBLE) && node->initializer()->is_typed(cdk::TYPE_INT)) {
         auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
         _pf.SDOUBLE(int_node->value());
-    } else if (node->is_typed(cdk::TYPE_INT)) {
-        auto int_node = dynamic_cast<cdk::integer_node*>(node->initializer());
-        _pf.SINT(int_node->value());
     } else {
         node->initializer()->accept(this, lvl);
     }
