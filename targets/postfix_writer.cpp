@@ -37,7 +37,11 @@ void til::postfix_writer::do_sequence_node(cdk::sequence_node* const node, int l
 //---------------------------------------------------------------------------
 
 void til::postfix_writer::do_integer_node(cdk::integer_node* const node, int lvl) {
-    _pf.INT(node->value());  // push an integer
+    if (inFunction()) {
+        _pf.INT(node->value());  // push an integer
+    } else {
+        _pf.SINT(node->value());
+    }
 }
 
 void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) {
