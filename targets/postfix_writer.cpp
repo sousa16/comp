@@ -46,7 +46,16 @@ void til::postfix_writer::do_integer_node(cdk::integer_node* const node, int lvl
 }
 
 void til::postfix_writer::do_double_node(cdk::double_node* const node, int lvl) {
-    // EMPTY
+    _pf.DOUBLE(node->value());  // push a double
+
+    /*
+    if (inFunction()) {
+        _pf.DOUBLE(node->value());
+    } else {
+        _pf.SDOUBLE(node->value());
+    }
+    }
+    */
 }
 
 void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) {
