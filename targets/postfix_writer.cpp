@@ -666,6 +666,14 @@ void til::postfix_writer::do_function_node(til::function_node* const node, int l
     _pf.GLOBAL(functionLabel, _pf.FUNC());
     _pf.LABEL(_functionLabels.top());
 
+    auto oldOffset = _offset;
+    _offset = 8;  // function arguments start at offset 8
+    _symtab.push();
+
+    _inFunctionArgs = true;
+    node->arguments()->accept(this, lvl);
+    _inFunctionArgs = false;
+
     // Compute the frame size manually
     int frame_size = 0;
     for (size_t i = 0; i < node->args()->size(); i++) {
@@ -679,9 +687,40 @@ void til::postfix_writer::do_function_node(til::function_node* const node, int l
     // Generate code for the function body
     node->block()->accept(this, lvl + 2);
 
-    // End the function
+    auto oldFunctionRetLabel = _currentFunctionRetLabel;
+    _currentFunctionRetLabel = mklbl(++_lbl);
+
+    auto oldFunctionLoopLabels = _currentFunctionLoopLabels;
+    _currentFunctionLoopLabels = new std::vector<std::pair<std::string, std::string>>();
+
+    _offset = 0;  // local variables start at offset 0
+
+    node->block()->accept(this, lvl);
+
+    _pf.ALIGN();
+    _pf.LABEL(_currentFunctionRetLabel);
     _pf.LEAVE();
     _pf.RET();
+
+    delete _currentFunctionLoopLabels;
+    _currentFunctionLoopLabels = oldFunctionLoopLabels;
+    _currentFunctionRetLabel = oldFunctionRetLabel;
+    _offset = oldOffset;
+    _symtab.pop();
+    _functionLabels.pop();
+
+    /*
+    if (inFunction()) {
+        _pf.TEXT(_functionLabels.top());
+        _pf.ADDR(functionLabel);
+    } else {
+        _pf.DATA();
+        _pf.SADDR(functionLabel);
+    }
+    */
+
+    _pf.TEXT(_functionLabels.top());
+    _pf.ADDR(functionLabel);
 }
 
 void til::postfix_writer::do_function_call_node(til::function_call_node* const node, int lvl) {
