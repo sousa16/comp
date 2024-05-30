@@ -21,9 +21,9 @@ class postfix_writer : public basic_ast_visitor {
     cdk::basic_postfix_emitter &_pf;
     int _lbl;
 
-    bool _forceOutsideFunction = false;       // whether to force future declarations to be global
-    std::stack<std::string> _functionLabels;  // (history of) label of current visiting function
+    bool _forceOutsideFunction = false;  // whether to force future declarations to be global
     bool _inFunctionArgs = false;
+    std::stack<std::string> _functionLabels;  // (history of) label of current visiting function
     std::optional<std::string> _externalFunctionName;
     std::set<std::string> _externalFunctionsToDeclare;
     std::string _currentFunctionRetLabel;  // where to jump when a return occurs
