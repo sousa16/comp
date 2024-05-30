@@ -61,8 +61,8 @@ void til::postfix_writer::do_string_node(cdk::string_node* const node, int lvl) 
     _pf.SSTRING(node->value());       // output string characters
 
     /* leave the address on the stack */
-    _pf.TEXT();             // return to the TEXT segment
-    _pf.ADDR(mklbl(lbl1));  // the string to be printed
+    _pf.DATA();              // return to the DATA segment
+    _pf.SADDR(mklbl(lbl1));  // the string to be stored
 
     /*
     if (inFunction()) {
