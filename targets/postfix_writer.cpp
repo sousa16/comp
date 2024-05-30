@@ -437,7 +437,9 @@ void til::postfix_writer::do_while_node(til::while_node* const node, int lvl) {
     node->condition()->accept(this, lvl);
     _pf.JZ(mklbl(lbl2 = ++_lbl));
 
+    _currentFunctionLoopLabels->push_back(std::make_pair(mklbl(lbl1), mklbl(lbl2)));
     node->block()->accept(this, lvl + 2);
+    _currentFunctionLoopLabels->pop_back();
 
     _pf.JMP(mklbl(lbl1));
     _pf.ALIGN();
